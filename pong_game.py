@@ -165,9 +165,8 @@ def draw_elements():
     # draw control background & sliders
     pygame.draw.rect(screen, (30, 30, 30), (0, 0, WIDTH, CONTROL_PANEL_HEIGHT))
     pygame.draw.line(screen, WHITE, (0, CONTROL_PANEL_HEIGHT), (WIDTH, CONTROL_PANEL_HEIGHT))
-    for slider in sliders:
-        slider.draw(screen)
 
+    # handle ball visibility based on packet loss
     time_now = pygame.time.get_ticks()
     if time_now - last_visual_loss_check > VISUAL_LOSS_INTERVAL:
         current_loss_percent = loss_slider.get_value()
@@ -176,6 +175,19 @@ def draw_elements():
         else:
             ball_visible = True
         last_visual_loss_check = time_now
+    # draw sliders
+    for slider in sliders:
+        slider.draw(screen)
+
+    # get & display stats
+    stats = engine.get_stats()
+    rate_text = small_font.render(f"Actual Loss Rate: {stats['loss rate']:.1f}%", True,
+                                    RED if stats['loss rate'] > 0 else GREEN)
+    screen.blit(rate_text, (600, 20))
+    total_count_text = small_font.render(f"Sent: {stats['sent']}", True, WHITE)
+    screen.blit(total_count_text, (600, 45))
+    split_count_text = small_font.render(f"Received: {stats['received']} | Lost: {stats['lost']}", True, WHITE)
+    screen.blit(split_count_text, (600, 70))
 
     # draw paddles & ball
     pygame.draw.rect(screen, WHITE, player_paddle)

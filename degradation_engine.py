@@ -47,3 +47,17 @@ class DegradationEngine:
         while self.action_queue and self.action_queue[0]['time_due'] <= current_time:
             released_actions.append(self.action_queue.popleft())
         return released_actions
+
+    def get_stats(self):
+        """Return current stats for display"""
+        # calculate loss rate
+        total = self.packets_sent
+        lost = self.packets_lost
+        loss_rate = (lost / total) * 100 if total > 0 else 0.0
+
+        return {
+            'sent' : total,
+            'received' : total - lost,
+            'lost' : lost,
+            'loss rate' : loss_rate
+        }
