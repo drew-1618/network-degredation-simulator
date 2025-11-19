@@ -39,6 +39,7 @@ ai_score = 0
 # game state 
 game_paused = False
 game_paused_timer = 0
+reset_stats_pending = False
 
 # visual state
 hit_flash = False
@@ -115,6 +116,7 @@ def check_collision():
     """Handle ball collisions with walls and paddles"""
     global player_score, ai_score, game_paused, game_paused_timer
     global hit_flash, hit_flash_timer, score_flash, score_flash_timer
+    global reset_stats_pending
 
     # top & bottom wall collision
     if ball.top <= CONTROL_PANEL_HEIGHT or ball.bottom >= TOTAL_HEIGHT:
@@ -137,9 +139,12 @@ def check_collision():
         hit_flash = True
         hit_flash_timer = pygame.time.get_ticks()
 
+        reset_stats_pending = True
+
     # ball passed right paddle, player scores
     if ball.right >= WIDTH:
         player_score += 1
+        engine.reset_stats()
         ball.reset()
 
         # activate pause
@@ -149,6 +154,8 @@ def check_collision():
         # activate green flash
         score_flash = True
         score_flash_timer = pygame.time.get_ticks()
+
+        reset_stats_pending = True
 
 def draw_elements():
     """Draw all game elements, sliders, & scores onto screen"""
@@ -209,6 +216,7 @@ def draw_elements():
 def game_loop():
     global game_paused, game_paused_timer
     global hit_flash, hit_flash_timer, score_flash, score_flash_timer
+    global reset_stats_pending
     running = True
     while running:
         handle_input()
@@ -219,6 +227,11 @@ def game_loop():
             time_now = pygame.time.get_ticks()
             if time_now - game_paused_timer > PAUSE_DURATION:
                 game_paused = False
+
+                # reset stats
+                if reset_stats_pending:
+                    engine.reset_stats()
+                    reset_stats_pending = False
         # flash red
         if hit_flash:
             time_now = pygame.time.get_ticks()

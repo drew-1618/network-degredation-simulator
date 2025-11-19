@@ -61,3 +61,9 @@ class DegradationEngine:
             'lost' : lost,
             'loss rate' : loss_rate
         }
+
+    def reset_stats(self):
+        """Reset packet counters and clear action queue"""
+        self.packets_sent = 0
+        self.packets_lost = 0
+        self.action_queue.clear()
