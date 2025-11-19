@@ -6,6 +6,7 @@ from config import *
 from components.paddle import Paddle
 from components.ball import Ball
 from components.slider import Slider
+from degradation_engine import DegradationEngine
 
 # game set up
 pygame.init()
@@ -28,6 +29,9 @@ latency_slider = Slider(SLIDER_X_START, SLIDER_Y, SLIDER_WIDTH, 50, 0, 500, "Lat
 loss_slider = Slider(SLIDER_X_START + SLIDER_SPACING, SLIDER_Y, SLIDER_WIDTH, 50, 0, 100, "Packet loss (%)")
 sliders = [latency_slider, loss_slider]
 
+# init degradation engine
+engine = DegradationEngine()
+
 # score tracking
 player_score = 0
 ai_score = 0
@@ -41,6 +45,12 @@ hit_flash = False
 hit_flash_timer = 0
 score_flash = False
 score_flash_timer = 0
+
+def update_degradation_params():
+    """Read values from sliders to update engine params"""
+    latency = latency_slider.get_value()
+    loss = loss_slider.get_value()
+    engine.set_parameters(latency, loss)
 
 def handle_input():
     """Handle all user input for player, sliders, and quitting game"""
@@ -60,29 +70,43 @@ def handle_input():
 
         # player movement
         if keys[pygame.K_UP]:
-            player_paddle.move(-1)
+            engine.queue_input(player_paddle, -PADDLE_SPEED)
         if keys[pygame.K_DOWN]:
-            player_paddle.move(1)
+            engine.queue_input(player_paddle, PADDLE_SPEED)
 
 def ai_movement(paddle, ball):
     """Implement a simple and perfect AI player"""
     # determine difference from ai paddle and ball
     center_diff = ball.centery - paddle.centery
+    target_move = 0
 
     # check if ball is below paddle center
     if center_diff > 0:
         # move down with a limit of the speed
-        paddle.y += min(paddle.speed, center_diff)
+        target_move = min(paddle.speed, center_diff)
     # check if ball is above paddle center
     elif center_diff < 0:
         # move up with a limit of the speed
-        paddle.y -= min(paddle.speed, abs(center_diff))
+        target_move = -min(paddle.speed, abs(center_diff))
     
-    # boundary check to not go off screen
-    if paddle.top < CONTROL_PANEL_HEIGHT:
-        paddle.top = CONTROL_PANEL_HEIGHT
-    if paddle.bottom > TOTAL_HEIGHT:
-        paddle.bottom = TOTAL_HEIGHT
+    engine.queue_input(paddle, target_move)
+
+def apply_lagged_actions():
+    """Apply actions released by engine after latency expires"""
+
+    released_actions = engine.get_due_actions()
+
+    for action in released_actions:
+        paddle = action['target']
+        move_amount = action['data']
+        # apply move physically
+        paddle.y += move_amount
+
+        # boundary check to not go off screen
+        if paddle.top < CONTROL_PANEL_HEIGHT:
+            paddle.top = CONTROL_PANEL_HEIGHT
+        if paddle.bottom > TOTAL_HEIGHT:
+            paddle.bottom = TOTAL_HEIGHT
 
 def check_collision():
     """Handle ball collisions with walls and paddles"""
@@ -120,8 +144,8 @@ def check_collision():
         game_paused_timer = pygame.time.get_ticks()
 
         # activate green flash
-        hit_flash = True
-        hit_flash_timer = pygame.time.get_ticks()
+        score_flash = True
+        score_flash_timer = pygame.time.get_ticks()
 
 def draw_elements():
     """Draw all game elements, sliders, & scores onto screen"""
@@ -163,6 +187,7 @@ def game_loop():
     running = True
     while running:
         handle_input()
+        update_degradation_params()
 
         # pause game
         if game_paused:
@@ -184,6 +209,7 @@ def game_loop():
             ball.move()
             check_collision()
             ai_movement(ai_paddle, ball)
+            apply_lagged_actions()
 
         draw_elements()
         clock.tick(FPS)
