@@ -22,7 +22,7 @@ class DegradationEngine:
         self.packets_sent += 1
 
         # check for packet loss
-        if random.random() * 100 < loss_percent:
+        if random.random() * 100 < self.loss_percent:
             self.packets_lost += 1
             return None  # drop packet
         
