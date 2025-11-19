@@ -5,21 +5,28 @@ import sys
 from config import *
 from components.paddle import Paddle
 from components.ball import Ball
+from components.slider import Slider
 
 # game set up
 pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode((WIDTH, TOTAL_HEIGHT))
 pygame.display.set_caption("Network Degradation Pong Simulator")
 clock = pygame.time.Clock()
 # font for scores and messages
 font = pygame.font.Font(None, 74)
+small_font = pygame.font.Font(None, 24)
 
 # object instantiations
 # player is left paddle
-player_paddle = Paddle(50, (HEIGHT // 2 - PADDLE_HEIGHT // 2), PADDLE_SPEED)
+player_paddle = Paddle(50, (HEIGHT // 2 - PADDLE_HEIGHT // 2) + CONTROL_PANEL_HEIGHT, PADDLE_SPEED)
 # ai is right paddle
-ai_paddle = Paddle((WIDTH - PADDLE_WIDTH - 50), (HEIGHT // 2 - PADDLE_HEIGHT // 2), PADDLE_SPEED)
-ball = Ball((WIDTH // 2 - BALL_SIZE // 2), (HEIGHT // 2 - BALL_SIZE / 2), BALL_SPEED)
+ai_paddle = Paddle((WIDTH - PADDLE_WIDTH - 50), (HEIGHT // 2 - PADDLE_HEIGHT // 2) + CONTROL_PANEL_HEIGHT, PADDLE_SPEED)
+ball = Ball((WIDTH // 2 - BALL_SIZE // 2), (HEIGHT // 2 - BALL_SIZE / 2) + CONTROL_PANEL_HEIGHT, BALL_SPEED)
+
+# create sliders
+latency_slider = Slider(SLIDER_X_START, SLIDER_Y, SLIDER_WIDTH, 50, 0, 500, "Latency (ms)")
+loss_slider = Slider(SLIDER_X_START + SLIDER_SPACING, SLIDER_Y, SLIDER_WIDTH, 50, 0, 100, "Packet loss (%)")
+sliders = [latency_slider, loss_slider]
 
 # score tracking
 player_score = 0
@@ -36,19 +43,26 @@ score_flash = False
 score_flash_timer = 0
 
 def handle_input():
-    """Handle all user input for player and quitting game"""
+    """Handle all user input for player, sliders, and quitting game"""
+    global game_paused
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
-    keys = pygame.key.get_pressed()
+        for slider in sliders:
+            slider.handle_event(event)
 
-    # player movement
-    if keys[pygame.K_UP]:
-        player_paddle.move(-1)
-    if keys[pygame.K_DOWN]:
-        player_paddle.move(1)
+    # only move if not paused
+    if not game_paused:
+        keys = pygame.key.get_pressed()
+
+        # player movement
+        if keys[pygame.K_UP]:
+            player_paddle.move(-1)
+        if keys[pygame.K_DOWN]:
+            player_paddle.move(1)
 
 def ai_movement(paddle, ball):
     """Implement a simple and perfect AI player"""
@@ -65,10 +79,10 @@ def ai_movement(paddle, ball):
         paddle.y -= min(paddle.speed, abs(center_diff))
     
     # boundary check to not go off screen
-    if paddle.top < 0:
-        paddle.top = 0
-    if paddle.bottom > HEIGHT:
-        paddle.bottom = HEIGHT
+    if paddle.top < CONTROL_PANEL_HEIGHT:
+        paddle.top = CONTROL_PANEL_HEIGHT
+    if paddle.bottom > TOTAL_HEIGHT:
+        paddle.bottom = TOTAL_HEIGHT
 
 def check_collision():
     """Handle ball collisions with walls and paddles"""
@@ -76,7 +90,7 @@ def check_collision():
     global hit_flash, hit_flash_timer, score_flash, score_flash_timer
 
     # top & bottom wall collision
-    if ball.top <= 0 or ball.bottom >= HEIGHT:
+    if ball.top <= CONTROL_PANEL_HEIGHT or ball.bottom >= TOTAL_HEIGHT:
         ball.velocity_y *= -1
     # paddle collision with ball
     if ball.colliderect(player_paddle) or ball.colliderect(ai_paddle):
@@ -110,7 +124,7 @@ def check_collision():
         hit_flash_timer = pygame.time.get_ticks()
 
 def draw_elements():
-    """Draw all game elements & scores onto screen"""
+    """Draw all game elements, sliders, & scores onto screen"""
     global hit_flash, score_flash
 
     background_color = BLACK  # default
@@ -120,19 +134,26 @@ def draw_elements():
         background_color = GREEN
 
     screen.fill(background_color)
+
+    # draw control background & sliders
+    pygame.draw.rect(screen, (30, 30, 30), (0, 0, WIDTH, CONTROL_PANEL_HEIGHT))
+    pygame.draw.line(screen, WHITE, (0, CONTROL_PANEL_HEIGHT), (WIDTH, CONTROL_PANEL_HEIGHT))
+    for slider in sliders:
+        slider.draw(screen)
+
     # draw paddles & ball
     pygame.draw.rect(screen, WHITE, player_paddle)
     pygame.draw.rect(screen, WHITE, ai_paddle)
-    pygame.draw.rect(screen, WHITE, ball)
+    pygame.draw.ellipse(screen, WHITE, ball)
 
     # draw dividing line
-    pygame.draw.aaline(screen, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT))
+    pygame.draw.aaline(screen, WHITE, (WIDTH // 2, CONTROL_PANEL_HEIGHT), (WIDTH // 2, TOTAL_HEIGHT))
 
     # render scores
     player_text = font.render(str(player_score), True, WHITE)
     ai_text = font.render(str(ai_score), True, WHITE)
-    screen.blit(player_text, (WIDTH // 2 - 60, 20))
-    screen.blit(ai_text, (WIDTH // 2 + 30, 20))
+    screen.blit(player_text, (WIDTH // 2 - 60, CONTROL_PANEL_HEIGHT + 20))
+    screen.blit(ai_text, (WIDTH // 2 + 30, CONTROL_PANEL_HEIGHT + 20))
 
     pygame.display.flip()
 
@@ -148,7 +169,6 @@ def game_loop():
             time_now = pygame.time.get_ticks()
             if time_now - game_paused_timer > PAUSE_DURATION:
                 game_paused = False
-
         # flash red
         if hit_flash:
             time_now = pygame.time.get_ticks()

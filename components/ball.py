@@ -1,6 +1,6 @@
 import pygame
 import random
-from config import WIDTH, HEIGHT, BALL_SIZE
+from config import *
 
 class Ball(pygame.Rect):
     def __init__(self, x, y, speed):
@@ -20,7 +20,7 @@ class Ball(pygame.Rect):
 
     def reset(self):
         """Reset ball to center of screen & reverse horizontal direction"""
-        self.center = (WIDTH // 2, HEIGHT // 2)
+        self.center = (WIDTH // 2, (HEIGHT // 2) + CONTROL_PANEL_HEIGHT)
         # reverse horizontal direction to alternate serves
         self.velocity_x *= -1
         # give new random vertical angle (when combined with horizontal component)

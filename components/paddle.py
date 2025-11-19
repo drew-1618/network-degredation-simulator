@@ -1,6 +1,6 @@
 import pygame
 from config import HEIGHT
-from config import PADDLE_WIDTH, PADDLE_HEIGHT
+from config import *
 
 class Paddle(pygame.Rect):
     def __init__(self, x, y, speed):
@@ -18,7 +18,7 @@ class Paddle(pygame.Rect):
 
         # check boundaries
         # top & bottom: inherited from pygame.Rect
-        if self.top < 0:
-            self.top = 0
-        if self.bottom > HEIGHT:
-            self.bottom = HEIGHT
+        if self.top < CONTROL_PANEL_HEIGHT:
+            self.top = CONTROL_PANEL_HEIGHT
+        if self.bottom > TOTAL_HEIGHT:
+            self.bottom = TOTAL_HEIGHT
