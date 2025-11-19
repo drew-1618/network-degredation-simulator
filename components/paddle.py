@@ -2,9 +2,9 @@ import pygame
 from config import HEIGHT
 from config import PADDLE_WIDTH, PADDLE_HEIGHT
 
-class Paddle(pygame.rect):
+class Paddle(pygame.Rect):
     def __init__(self, x, y, speed):
-        # init parent class 'pygame.rect'
+        # init parent class 'pygame.Rect'
         super().__init__(x, y, PADDLE_WIDTH, PADDLE_HEIGHT)
         self.speed = speed
     
@@ -17,7 +17,7 @@ class Paddle(pygame.rect):
         self.y += direction * self.speed
 
         # check boundaries
-        # top & bottom: inherited from pygame.rect
+        # top & bottom: inherited from pygame.Rect
         if self.top < 0:
             self.top = 0
         if self.bottom > HEIGHT:
