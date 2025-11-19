@@ -5,6 +5,7 @@ HEIGHT = TOTAL_HEIGHT - CONTROL_PANEL_HEIGHT
 FPS = 60
 PAUSE_DURATION = 1000  # 1 seconds delay
 FLASH_DURATION = 200   # 200 ms flash
+VISUAL_LOSS_INTERVAL = 500  # check visual loss every 500 ms (2 checks/s)
 
 # slider
 SLIDER_Y = 30

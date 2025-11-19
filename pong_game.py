@@ -45,6 +45,9 @@ hit_flash = False
 hit_flash_timer = 0
 score_flash = False
 score_flash_timer = 0
+ball_visible = True
+last_visual_loss_check = 0
+
 
 def update_degradation_params():
     """Read values from sliders to update engine params"""
@@ -149,7 +152,7 @@ def check_collision():
 
 def draw_elements():
     """Draw all game elements, sliders, & scores onto screen"""
-    global hit_flash, score_flash
+    global hit_flash, score_flash, ball_visible, last_visual_loss_check
 
     background_color = BLACK  # default
     if hit_flash:
@@ -165,10 +168,20 @@ def draw_elements():
     for slider in sliders:
         slider.draw(screen)
 
+    time_now = pygame.time.get_ticks()
+    if time_now - last_visual_loss_check > VISUAL_LOSS_INTERVAL:
+        current_loss_percent = loss_slider.get_value()
+        if random.random() * 100 < current_loss_percent:
+            ball_visible = False
+        else:
+            ball_visible = True
+        last_visual_loss_check = time_now
+
     # draw paddles & ball
     pygame.draw.rect(screen, WHITE, player_paddle)
     pygame.draw.rect(screen, WHITE, ai_paddle)
-    pygame.draw.ellipse(screen, WHITE, ball)
+    if ball_visible:
+        pygame.draw.ellipse(screen, WHITE, ball)
 
     # draw dividing line
     pygame.draw.aaline(screen, WHITE, (WIDTH // 2, CONTROL_PANEL_HEIGHT), (WIDTH // 2, TOTAL_HEIGHT))
