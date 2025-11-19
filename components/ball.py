@@ -5,7 +5,7 @@ from config import WIDTH, HEIGHT, BALL_SIZE
 class Ball(pygame.Rect):
     def __init__(self, x, y, speed):
         # init parent class 'pygame.Rect'
-        super.__init__(x, y, BALL_SIZE, BALL_SIZE)
+        super().__init__(x, y, BALL_SIZE, BALL_SIZE)
         self.speed = speed
 
         # init velocity
