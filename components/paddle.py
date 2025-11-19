@@ -10,7 +10,7 @@ class Paddle(pygame.Rect):
     
     def move(self, direction):
         """
-        Moves paddle up (direction=1) or down (direction=-1)
+        Moves paddle up (direction=-1) or down (direction=1)
         and ensures it stays within boundaries (vertical only)
         """
         # update position
