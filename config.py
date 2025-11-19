@@ -1,7 +1,7 @@
 # game constants
 WIDTH, HEIGHT = 800, 600
 FPS = 60
-PAUSE_DURATION = 1500  # 1.5 seconds delay
+PAUSE_DURATION = 1000  # 1 seconds delay
 FLASH_DURATION = 200   # 200 ms flash
 
 # colors
