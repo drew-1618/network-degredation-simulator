@@ -25,3 +25,18 @@ class Ball(pygame.Rect):
         self.velocity_x *= -1
         # give new random vertical angle (when combined with horizontal component)
         self.velocity_y = random.choice([self.speed, -self.speed])
+    
+    def increase_speed(self):
+        """Increase ball speed and apply it to velocity vector after a point is made"""
+        self.speed += BALL_SPEED_INCREMENT
+
+        # preserve direction when updating velocity vector
+        if self.velocity_x > 0:
+            self.velocity_x = self.speed
+        else:
+            self.velocity_x = -self.speed
+        
+        if self.velocity_y > 0:
+            self.velocity_y = self.speed
+        else:
+            self.velocity_y = -self.speed

@@ -146,6 +146,8 @@ def check_collision():
         player_score += 1
         engine.reset_stats()
         ball.reset()
+        # increase speed if player scores
+        ball.increase_speed()
 
         # activate pause
         game_paused = True
