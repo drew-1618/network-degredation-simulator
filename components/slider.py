@@ -45,7 +45,7 @@ class Slider:
 
         # calculate actual value
         value_range = self.max_val - self.min_val
-        self.value = int(self.min_val + value_range * ratio)
+        self.value = round(self.min_val + value_range * ratio, 2)
 
     def get_value(self):
         return self.value
