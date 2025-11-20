@@ -30,7 +30,7 @@ loss_slider = Slider(SLIDER_X_START + SLIDER_SPACING, SLIDER_Y, SLIDER_WIDTH, 50
 sliders = [latency_slider, loss_slider]
 
 # init degradation engine
-engine = DegradationEngine()
+engine = DegradationEngine(player_paddle, ai_paddle)
 
 # score tracking
 player_score = 0
