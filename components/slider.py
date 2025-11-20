@@ -55,7 +55,10 @@ class Slider:
         # draw slider bar
         pygame.draw.rect(screen, WHITE, self.bar_rect, border_radius=2)
         # draw thumb
-        pygame.draw.circle(screen, BLUE, (self.thumb_x, self.bar_rect.centery), self.thumb_radius)
+        current_color = BLUE
+        if self.dragging:
+            current_color = DARKER_BLUE
+        pygame.draw.circle(screen, current_color, (self.thumb_x, self.bar_rect.centery), self.thumb_radius)
         # draw label
         text = self.font.render(f"{self.label}: {self.value}", True, WHITE)
         screen.blit(text, (self.rect.x, self.rect.y))

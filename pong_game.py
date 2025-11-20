@@ -247,8 +247,10 @@ def draw_elements():
     # draw buttons
     if is_game_over:
         start_pause_button.text = "PLAY AGAIN"
+        start_pause_button.color = GREEN
     else:
         start_pause_button.text = "PAUSE" if is_game_running else "START"
+        start_pause_button.color = BLUE
     start_pause_button.draw(screen)
 
     # draw paddles & ball

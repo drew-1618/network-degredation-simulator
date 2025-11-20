@@ -4,7 +4,7 @@ CONTROL_PANEL_HEIGHT = 150
 HEIGHT = TOTAL_HEIGHT - CONTROL_PANEL_HEIGHT
 FPS = 60
 PAUSE_DURATION = 1000  # 1 seconds delay
-FLASH_DURATION = 200   # 200 ms flash
+FLASH_DURATION = 400   # 200 ms flash
 VISUAL_LOSS_INTERVAL = 500  # check visual loss every 500 ms (2 checks/s)
 AI_REACTION_TIME = 200  # 200 ms to make AI beatable with no degradation
 MAX_SCORE = 5
@@ -37,6 +37,8 @@ BLACK = (0, 0, 0)
 RED = (244, 67, 54)
 GREEN = (76, 175, 80)
 BLUE = (100, 100, 255)
+DARKER_BLUE = (30, 60, 150)  # for button hover (start/pause)
+DARK_GREEN = (40, 100, 45)  # for button hover (play again)
 
 # component constants
 PADDLE_WIDTH, PADDLE_HEIGHT = 15, 100
