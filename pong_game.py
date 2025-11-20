@@ -195,11 +195,12 @@ def check_collision():
             ball.reset()
 
 def transparent_background(color):
+    """Display a semi-transparent background for popup/overlays"""
     # semi-transparent background
-        overlay = pygame.Surface((WIDTH, HEIGHT))
-        overlay.set_alpha(200)
-        overlay.fill(color)
-        screen.blit(overlay, (0, CONTROL_PANEL_HEIGHT))
+    overlay = pygame.Surface((WIDTH, HEIGHT))
+    overlay.set_alpha(200)
+    overlay.fill(color)
+    screen.blit(overlay, (0, CONTROL_PANEL_HEIGHT))
 
 
 def draw_elements():
@@ -291,6 +292,7 @@ def draw_elements():
     pygame.display.flip()
 
 def game_loop():
+    """Main driver of the game"""
     global game_paused, game_paused_timer
     global hit_flash, hit_flash_timer, score_flash, score_flash_timer
     global reset_stats_pending
