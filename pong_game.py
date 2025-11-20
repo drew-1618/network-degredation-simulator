@@ -64,7 +64,7 @@ def update_degradation_params():
 
 def handle_input():
     """Handle all user input for player, sliders, and quitting game"""
-    global game_paused, is_game_over, is_game_running
+    global game_paused, is_game_over, is_game_running, ai_score, player_score
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -84,6 +84,7 @@ def handle_input():
                 is_game_over = False
                 is_game_running = True
                 game_paused = False
+                ball.reset()
             else:
                 # if paused, play; if playing, pause
                 is_game_running = not is_game_running
