@@ -7,7 +7,7 @@ PAUSE_DURATION = 1000  # 1 seconds delay
 FLASH_DURATION = 200   # 200 ms flash
 VISUAL_LOSS_INTERVAL = 500  # check visual loss every 500 ms (2 checks/s)
 AI_REACTION_TIME = 200  # 200 ms to make AI beatable with no degradation
-MAX_SCORE = 2
+MAX_SCORE = 5
 
 # in ms: additional fluctuation around the latency slider value 
 # key:value format -> latency from slider : additional jitter 

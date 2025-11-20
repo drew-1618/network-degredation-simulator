@@ -194,6 +194,13 @@ def check_collision():
         else:
             ball.reset()
 
+def transparent_background(color):
+    # semi-transparent background
+        overlay = pygame.Surface((WIDTH, HEIGHT))
+        overlay.set_alpha(200)
+        overlay.fill(color)
+        screen.blit(overlay, (0, CONTROL_PANEL_HEIGHT))
+
 
 def draw_elements():
     """Draw all game elements, sliders, & scores onto screen"""
@@ -260,24 +267,22 @@ def draw_elements():
 
     # pause overlay button
     if not is_game_running and not is_game_over:
+        transparent_background(BLACK)
         pause = font.render("PAUSED", True, WHITE)
         screen.blit(pause, pause.get_rect(center=(WIDTH / 2, TOTAL_HEIGHT / 2)))
 
     # end of game display
     if is_game_over:
-        # semi-transparent background
-        overlay = pygame.Surface((WIDTH, HEIGHT))
-        overlay.set_alpha(200)
-        overlay.fill(BLACK)
-        screen.blit(overlay, (0, CONTROL_PANEL_HEIGHT))
+        player_won = player_score > ai_score
+        transparent_background(GREEN) if player_won else transparent_background(RED)
         
         game_over_text = font.render("GAME OVER", True, WHITE)
         screen.blit(game_over_text, game_over_text.get_rect(center=(WIDTH/2, CONTROL_PANEL_HEIGHT + 150)))
         
-        if player_score > ai_score:
-            result_text = font.render("YOU WON!", True, GREEN)
+        if player_won:
+            result_text = font.render("YOU WON!", True, WHITE)
         else:
-            result_text = font.render("COMPUTER WON!", True, RED)
+            result_text = font.render("COMPUTER WON!", True, WHITE)
         screen.blit(result_text, result_text.get_rect(center=(WIDTH/2, CONTROL_PANEL_HEIGHT + 250)))
         
         final_score_text = font.render(f"Final Score: {player_score} - {ai_score}", True, WHITE)
