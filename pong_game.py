@@ -27,7 +27,7 @@ ball = Ball((WIDTH // 2 - BALL_SIZE // 2), (HEIGHT // 2 - BALL_SIZE / 2) + CONTR
 
 # create sliders
 latency_slider = Slider(SLIDER_X_START, SLIDER_Y, SLIDER_WIDTH, 50, 0, 500, "Latency (ms)")
-loss_slider = Slider(SLIDER_X_START + SLIDER_SPACING, SLIDER_Y, SLIDER_WIDTH, 50, 0, 100, "Packet loss (%)")
+loss_slider = Slider(SLIDER_X_START + SLIDER_SPACING, SLIDER_Y, SLIDER_WIDTH, 50, 0, 100, "Avg Packet loss (%)")
 sliders = [latency_slider, loss_slider]
 
 # create button
@@ -146,7 +146,9 @@ def check_collision():
     if ball.top <= CONTROL_PANEL_HEIGHT or ball.bottom >= TOTAL_HEIGHT:
         ball.velocity_y *= -1
     # paddle collision with ball
-    if ball.colliderect(player_paddle) or ball.colliderect(ai_paddle):
+    if ball.colliderect(player_paddle) and ball.velocity_x < 0:
+        ball.velocity_x *= -1
+    if ai_paddle.colliderect(ball) and ball.velocity_x > 0:
         ball.velocity_x *= -1
 
     score_occurred = False
@@ -241,8 +243,10 @@ def draw_elements():
         screen.blit(rate_text, (600, 20))
         total_count_text = small_font.render(f"Sent: {stats['sent']}", True, WHITE)
         screen.blit(total_count_text, (600, 45))
-        split_count_text = small_font.render(f"Received: {stats['received']} | Lost: {stats['lost']}", True, WHITE)
-        screen.blit(split_count_text, (600, 70))
+        received_count_text = small_font.render(f"Received: {stats['received']}", True, GREEN)
+        screen.blit(received_count_text, (600, 70))
+        lost_count_text = small_font.render(f"Lost: {stats['lost']}", True, RED)
+        screen.blit(lost_count_text, (600, 95))
 
     # draw buttons
     if is_game_over:
@@ -280,7 +284,7 @@ def draw_elements():
         transparent_background(GREEN) if player_won else transparent_background(RED)
         
         game_over_text = font.render("GAME OVER", True, WHITE)
-        screen.blit(game_over_text, game_over_text.get_rect(center=(WIDTH/2, CONTROL_PANEL_HEIGHT + 150)))
+        screen.blit(game_over_text, game_over_text.get_rect(center=(WIDTH/2, CONTROL_PANEL_HEIGHT + 160)))
         
         if player_won:
             result_text = font.render("YOU WON!", True, WHITE)
