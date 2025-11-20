@@ -1,6 +1,7 @@
 import time
 import random
 from collections import deque
+from config import *
 
 class DegradationEngine:
     def __init__(self):
@@ -17,18 +18,35 @@ class DegradationEngine:
         self.latency = latency
         self.loss_percent = loss_percent
 
+    def get_max_jitter(self):
+        """Calculate max jitter based off latency slider & config JITTER_MAP"""
+        max_jitter = 0
+        for threshold, jitter_val in sorted(JITTER_MAP.items()):
+            if self.latency >= threshold:
+                max_jitter = jitter_val
+        return max_jitter
+
     def queue_input(self, target_paddle, data):
-        """Receive input and queue it if it passes loss check"""
+        """
+        Receive input and queue it if it passes loss check.
+        Handle packet loss.
+        Handle latency and jitter.
+        """
         self.packets_sent += 1
 
         # check for packet loss
         if random.random() * 100 < self.loss_percent:
             self.packets_lost += 1
             return None  # drop packet
-        
-        # apply latency
-        delay_seconds = self.latency / 1000
-        time_due = time.time() + delay_seconds
+
+        # apply latency with random jitter
+        base_delay_seconds = self.latency / 1000
+        # don't have jitter for no latency
+        if self.latency > 0:
+            jitter_delay_seconds = self.get_max_jitter() / 1000
+        else:
+            jitter_delay_seconds = 0
+        time_due = time.time() + base_delay_seconds + jitter_delay_seconds
 
         # queue action
         action = {

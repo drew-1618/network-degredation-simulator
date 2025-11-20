@@ -7,6 +7,16 @@ PAUSE_DURATION = 1000  # 1 seconds delay
 FLASH_DURATION = 200   # 200 ms flash
 VISUAL_LOSS_INTERVAL = 500  # check visual loss every 500 ms (2 checks/s)
 
+# in ms: additional fluctuation around the latency slider value 
+# key:value format -> latency from slider : additional jitter 
+JITTER_MAP = {
+    0 : 0,
+    10 : 2,
+    50 : 10,
+    150 : 30,
+    300 : 80
+}
+
 # slider
 SLIDER_Y = 30
 SLIDER_X_START = 50
