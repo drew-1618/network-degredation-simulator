@@ -7,6 +7,7 @@ from components.paddle import Paddle
 from components.ball import Ball
 from components.slider import Slider
 from degradation_engine import DegradationEngine
+from components.button import Button
 
 # game set up
 pygame.init()
@@ -29,6 +30,9 @@ latency_slider = Slider(SLIDER_X_START, SLIDER_Y, SLIDER_WIDTH, 50, 0, 500, "Lat
 loss_slider = Slider(SLIDER_X_START + SLIDER_SPACING, SLIDER_Y, SLIDER_WIDTH, 50, 0, 100, "Packet loss (%)")
 sliders = [latency_slider, loss_slider]
 
+# create button
+start_pause_button = Button(BUTTON_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT, "START", BLUE)
+
 # init degradation engine
 engine = DegradationEngine(player_paddle, ai_paddle)
 
@@ -40,6 +44,8 @@ ai_score = 0
 game_paused = False
 game_paused_timer = 0
 reset_stats_pending = False
+is_game_running = False
+is_game_over = False
 
 # visual state
 hit_flash = False
@@ -58,12 +64,29 @@ def update_degradation_params():
 
 def handle_input():
     """Handle all user input for player, sliders, and quitting game"""
-    global game_paused
+    global game_paused, is_game_over, is_game_running
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+
+        # handle start/pause button
+        if start_pause_button.handle_click(event):
+            if is_game_over:
+                # reset game params for fresh start
+                player_score = 0
+                ai_score = 0
+                ball.speed = BALL_SPEED
+                # reset engine
+                engine.reset_stats()
+                # reset state flags
+                is_game_over = False
+                is_game_running = True
+                game_paused = False
+            else:
+                # if paused, play; if playing, pause
+                is_game_running = not is_game_running
 
         for slider in sliders:
             slider.handle_event(event)
@@ -198,6 +221,10 @@ def draw_elements():
     split_count_text = small_font.render(f"Received: {stats['received']} | Lost: {stats['lost']}", True, WHITE)
     screen.blit(split_count_text, (600, 70))
 
+    # draw buttons
+    start_pause_button.text = "PAUSE" if is_game_running else "START"
+    start_pause_button.draw(screen)
+
     # draw paddles & ball
     pygame.draw.rect(screen, WHITE, player_paddle)
     pygame.draw.rect(screen, WHITE, ai_paddle)
@@ -213,6 +240,12 @@ def draw_elements():
     screen.blit(player_text, (WIDTH // 2 - 60, CONTROL_PANEL_HEIGHT + 20))
     screen.blit(ai_text, (WIDTH // 2 + 30, CONTROL_PANEL_HEIGHT + 20))
 
+    # pause overlay button
+    if not is_game_running:
+        pause = font.render("PAUSED", True, WHITE)
+        screen.blit(pause, pause.get_rect(center=(WIDTH / 2, TOTAL_HEIGHT / 2)))
+
+
     pygame.display.flip()
 
 def game_loop():
@@ -221,8 +254,8 @@ def game_loop():
     global reset_stats_pending
     running = True
     while running:
-        handle_input()
         update_degradation_params()
+        handle_input()
 
         # pause game
         if game_paused:
@@ -245,7 +278,8 @@ def game_loop():
             if time_now - score_flash_timer > FLASH_DURATION:
                 score_flash = False
 
-        if not game_paused:
+        # only if manually started and not paused between scores
+        if is_game_running and not game_paused:
             ball.move()
             check_collision()
             ai_movement(ai_paddle, ball)
