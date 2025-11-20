@@ -92,7 +92,7 @@ def handle_input():
             slider.handle_event(event)
 
     # only move if not paused
-    if not game_paused:
+    if is_game_running and not game_paused and not is_game_over:
         keys = pygame.key.get_pressed()
 
         # player movement
@@ -139,7 +139,7 @@ def check_collision():
     """Handle ball collisions with walls and paddles"""
     global player_score, ai_score, game_paused, game_paused_timer
     global hit_flash, hit_flash_timer, score_flash, score_flash_timer
-    global reset_stats_pending
+    global reset_stats_pending, is_game_over, is_game_running
 
     # top & bottom wall collision
     if ball.top <= CONTROL_PANEL_HEIGHT or ball.bottom >= TOTAL_HEIGHT:
@@ -148,11 +148,13 @@ def check_collision():
     if ball.colliderect(player_paddle) or ball.colliderect(ai_paddle):
         ball.velocity_x *= -1
 
+    score_occurred = False
+
     # scoring (left & right walls)
     # ball passed left paddle, AI scores
     if ball.left <= 0:
         ai_score += 1
-        ball.reset()
+        score_occurred = True
 
         # activate pause
         game_paused = True
@@ -167,8 +169,9 @@ def check_collision():
     # ball passed right paddle, player scores
     if ball.right >= WIDTH:
         player_score += 1
+        score_occurred = True
         engine.reset_stats()
-        ball.reset()
+
         # increase speed if player scores
         ball.increase_speed()
 
@@ -180,7 +183,16 @@ def check_collision():
         score_flash = True
         score_flash_timer = pygame.time.get_ticks()
 
+    if score_occurred:
         reset_stats_pending = True
+        # check for game over
+        if player_score >= MAX_SCORE or ai_score >= MAX_SCORE:
+            is_game_over = True
+            is_game_running = False
+            game_paused = False
+        else:
+            ball.reset()
+
 
 def draw_elements():
     """Draw all game elements, sliders, & scores onto screen"""
@@ -213,16 +225,21 @@ def draw_elements():
 
     # get & display stats
     stats = engine.get_stats()
-    rate_text = small_font.render(f"Actual Loss Rate: {stats['loss rate']:.1f}%", True,
-                                    RED if stats['loss rate'] > 0 else GREEN)
-    screen.blit(rate_text, (600, 20))
-    total_count_text = small_font.render(f"Sent: {stats['sent']}", True, WHITE)
-    screen.blit(total_count_text, (600, 45))
-    split_count_text = small_font.render(f"Received: {stats['received']} | Lost: {stats['lost']}", True, WHITE)
-    screen.blit(split_count_text, (600, 70))
+    # only show live stats during game
+    if not is_game_over:
+        rate_text = small_font.render(f"Actual Loss Rate: {stats['loss rate']:.1f}%", True,
+                                        RED if stats['loss rate'] > 0 else GREEN)
+        screen.blit(rate_text, (600, 20))
+        total_count_text = small_font.render(f"Sent: {stats['sent']}", True, WHITE)
+        screen.blit(total_count_text, (600, 45))
+        split_count_text = small_font.render(f"Received: {stats['received']} | Lost: {stats['lost']}", True, WHITE)
+        screen.blit(split_count_text, (600, 70))
 
     # draw buttons
-    start_pause_button.text = "PAUSE" if is_game_running else "START"
+    if is_game_over:
+        start_pause_button.text = "PLAY AGAIN"
+    else:
+        start_pause_button.text = "PAUSE" if is_game_running else "START"
     start_pause_button.draw(screen)
 
     # draw paddles & ball
@@ -241,10 +258,29 @@ def draw_elements():
     screen.blit(ai_text, (WIDTH // 2 + 30, CONTROL_PANEL_HEIGHT + 20))
 
     # pause overlay button
-    if not is_game_running:
+    if not is_game_running and not is_game_over:
         pause = font.render("PAUSED", True, WHITE)
         screen.blit(pause, pause.get_rect(center=(WIDTH / 2, TOTAL_HEIGHT / 2)))
 
+    # end of game display
+    if is_game_over:
+        # semi-transparent background
+        overlay = pygame.Surface((WIDTH, HEIGHT))
+        overlay.set_alpha(200)
+        overlay.fill(BLACK)
+        screen.blit(overlay, (0, CONTROL_PANEL_HEIGHT))
+        
+        game_over_text = font.render("GAME OVER", True, WHITE)
+        screen.blit(game_over_text, game_over_text.get_rect(center=(WIDTH/2, CONTROL_PANEL_HEIGHT + 150)))
+        
+        if player_score > ai_score:
+            result_text = font.render("YOU WON!", True, GREEN)
+        else:
+            result_text = font.render("COMPUTER WON!", True, RED)
+        screen.blit(result_text, result_text.get_rect(center=(WIDTH/2, CONTROL_PANEL_HEIGHT + 250)))
+        
+        final_score_text = font.render(f"Final Score: {player_score} - {ai_score}", True, WHITE)
+        screen.blit(final_score_text, final_score_text.get_rect(center=(WIDTH/2, CONTROL_PANEL_HEIGHT + 320)))
 
     pygame.display.flip()
 

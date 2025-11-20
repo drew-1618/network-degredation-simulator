@@ -6,7 +6,8 @@ FPS = 60
 PAUSE_DURATION = 1000  # 1 seconds delay
 FLASH_DURATION = 200   # 200 ms flash
 VISUAL_LOSS_INTERVAL = 500  # check visual loss every 500 ms (2 checks/s)
-AI_REACTION_TIME = 100  # 100 ms to make AI beatable with no degradation
+AI_REACTION_TIME = 200  # 200 ms to make AI beatable with no degradation
+MAX_SCORE = 2
 
 # in ms: additional fluctuation around the latency slider value 
 # key:value format -> latency from slider : additional jitter 
@@ -25,7 +26,7 @@ SLIDER_SPACING = 300
 SLIDER_WIDTH = 200
 
 # button
-BUTTON_WIDTH = 100
+BUTTON_WIDTH = 130
 BUTTON_HEIGHT = 40
 BUTTON_X = 45  # right of control panel
 BUTTON_Y = 80
