@@ -25,16 +25,25 @@ player_paddle = Paddle(50, (HEIGHT // 2 - PADDLE_HEIGHT // 2) + CONTROL_PANEL_HE
 ai_paddle = Paddle((WIDTH - PADDLE_WIDTH - 50), (HEIGHT // 2 - PADDLE_HEIGHT // 2) + CONTROL_PANEL_HEIGHT, PADDLE_SPEED)
 ball = Ball((WIDTH // 2 - BALL_SIZE // 2), (HEIGHT // 2 - BALL_SIZE / 2) + CONTROL_PANEL_HEIGHT, BALL_SPEED)
 
+# init degradation engine
+engine = DegradationEngine(player_paddle, ai_paddle)
+engine.set_parameters(0, 0)
+
 # create sliders
 latency_slider = Slider(SLIDER_X_START, SLIDER_Y, SLIDER_WIDTH, 50, 0, 500, "Latency (ms)")
 loss_slider = Slider(SLIDER_X_START + SLIDER_SPACING, SLIDER_Y, SLIDER_WIDTH, 50, 0, 100, "Avg Packet loss (%)")
 sliders = [latency_slider, loss_slider]
 
-# create button
+# create start, pause, play again button
 start_pause_button = Button(BUTTON_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT, "START", BLUE)
 
-# init degradation engine
-engine = DegradationEngine(player_paddle, ai_paddle)
+# create buttons for scenarios
+preset_buttons = []
+preset_keys = list(PRESET_MAP.keys())
+for i, key in enumerate(preset_keys):
+    x_pos = 210 + (i * (PRESET_WIDTH + GAP))
+    btn = Button(x_pos, PRESET_Y, PRESET_WIDTH, PRESET_HEIGHT, key, GRAY)
+    preset_buttons.append(btn)
 
 # score tracking
 player_score = 0
@@ -62,6 +71,37 @@ def update_degradation_params():
     loss = loss_slider.get_value()
     engine.set_parameters(latency, loss)
 
+def set_scenario(preset_name):
+    """Update sliders and engine to match preset chosen"""
+    data = PRESET_MAP[preset_name]
+    # force update to sliders visually
+    latency_slider.set_value(data['latency'])
+    loss_slider.set_value(data['loss'])
+    # apply to engine
+    engine.set_parameters(data['latency'], data['loss'])
+
+def toggle_game_state():
+    """Helper to toggle start/pause/reset"""
+    global is_game_running, is_game_over, player_score, ai_score, game_paused
+    
+    if is_game_over:
+        # reset game params for fresh start
+        player_score = 0
+        ai_score = 0
+        ball.speed = BALL_SPEED
+        # reset engine
+        engine.reset_stats()
+        # reset state flags
+        is_game_over = False
+        is_game_running = True
+        game_paused = False
+        ball.reset()
+    else:
+        # if paused, play; if playing, pause
+        is_game_running = not is_game_running
+        if not is_game_running:
+            engine.reset_stats()
+    
 def handle_input():
     """Handle all user input for player, sliders, and quitting game"""
     global game_paused, is_game_over, is_game_running, ai_score, player_score
@@ -71,23 +111,19 @@ def handle_input():
             pygame.quit()
             sys.exit()
 
-        # handle start/pause button
+        # handle start/pause button with keyboard
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
+                toggle_game_state()
+        # handle start/pause button with mouse
         if start_pause_button.handle_click(event):
-            if is_game_over:
-                # reset game params for fresh start
-                player_score = 0
-                ai_score = 0
-                ball.speed = BALL_SPEED
-                # reset engine
-                engine.reset_stats()
-                # reset state flags
-                is_game_over = False
-                is_game_running = True
-                game_paused = False
-                ball.reset()
-            else:
-                # if paused, play; if playing, pause
-                is_game_running = not is_game_running
+            toggle_game_state()
+
+        # handle scenario buttons
+        if not is_game_over:
+            for btn in preset_buttons:
+                if btn.handle_click(event):
+                    set_scenario(btn.text)
 
         for slider in sliders:
             slider.handle_event(event)
@@ -218,7 +254,7 @@ def draw_elements():
     screen.fill(background_color)
 
     # draw control background & sliders
-    pygame.draw.rect(screen, (30, 30, 30), (0, 0, WIDTH, CONTROL_PANEL_HEIGHT))
+    pygame.draw.rect(screen, CONTROL_CENTER_BLUE, (0, 0, WIDTH, CONTROL_PANEL_HEIGHT))
     pygame.draw.line(screen, WHITE, (0, CONTROL_PANEL_HEIGHT), (WIDTH, CONTROL_PANEL_HEIGHT))
 
     # handle ball visibility based on packet loss
@@ -233,6 +269,10 @@ def draw_elements():
     # draw sliders
     for slider in sliders:
         slider.draw(screen)
+
+    # draw presets
+    for btn in preset_buttons:
+        btn.draw(screen)
 
     # get & display stats
     stats = engine.get_stats()

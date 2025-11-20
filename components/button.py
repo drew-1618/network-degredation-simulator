@@ -17,8 +17,10 @@ class Button:
         if self.is_hovered:
             if self.color == BLUE:
                 current_color = DARKER_BLUE
-            else:
+            elif self.color == GREEN:
                 current_color = DARK_GREEN
+            elif self.color == GRAY:
+                current_color = DARK_GRAY
         pygame.draw.rect(screen, current_color, self.rect, border_radius=5)
 
         text = self.font.render(self.text, True, WHITE)
@@ -31,11 +33,6 @@ class Button:
         if event.type == pygame.MOUSEMOTION:
             self.is_hovered = self.rect.collidepoint(event.pos)
 
-        # enter key or space key to start, pause, or play again
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
-                self.is_clicked = True
-                return True
         # mouse click button to start, pause, or play again
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):

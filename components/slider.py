@@ -49,7 +49,21 @@ class Slider:
 
     def get_value(self):
         return self.value
-    
+
+    def set_value(self, value):
+        """Set the value and update thumb position"""
+        self.value = max(self.min_val, min(self.max_val, value))
+
+        # calculate visual position
+        range_width = self.slider_max_x - self.slider_min_x
+        value_range = self.max_val - self.min_val
+
+        if value_range == 0:
+            return
+        
+        ratio = (self.value - self.min_val) / value_range
+        self.thumb_x = self.slider_min_x + (range_width * ratio)
+
     def draw(self, screen):
         """Draw slider bar, thumb, and label"""
         # draw slider bar

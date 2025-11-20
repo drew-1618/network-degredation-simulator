@@ -13,11 +13,28 @@ MAX_SCORE = 5
 # key:value format -> latency from slider : additional jitter 
 JITTER_MAP = {
     0 : 0,
+    1 : 1,
     10 : 2,
-    50 : 10,
-    150 : 30,
-    300 : 80
+    45 : 10,
+    100 : 30,
+    300 : 80,
+    600 : 150
 }
+
+# preset options to mimic real scenarios
+PRESET_MAP = {
+    'LAN' : {'latency' : 1, 'loss' : 0},
+    'Wi-Fi' : {'latency' : 45, 'loss' : 0.5},
+    '4G LTE' : {'latency' : 100, 'loss' : 1.5},
+    # Geo-satellite
+    'Sat' : {'latency' : 600, 'loss' : 5},
+}
+
+# preset buttons
+PRESET_Y = 80
+PRESET_WIDTH = 75
+PRESET_HEIGHT = 30
+GAP = 20
 
 # slider
 SLIDER_Y = 30
@@ -33,12 +50,15 @@ BUTTON_Y = 80
 
 # colors
 WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (244, 67, 54)
-GREEN = (76, 175, 80)
-BLUE = (100, 100, 255)
+BLACK = (15, 15, 20)
+RED = (239, 83, 80)
+GREEN = (102, 187, 106)
+BLUE = (25, 118, 210)
 DARKER_BLUE = (30, 60, 150)  # for button hover (start/pause)
-DARK_GREEN = (40, 100, 45)  # for button hover (play again)
+DARK_GREEN = (56, 142, 60)  # for button hover (play again)
+GRAY = (100, 100, 100)
+DARK_GRAY = (55, 55, 60)
+CONTROL_CENTER_BLUE = (28, 32, 42)
 
 # component constants
 PADDLE_WIDTH, PADDLE_HEIGHT = 15, 100
