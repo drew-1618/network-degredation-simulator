@@ -19,6 +19,12 @@ class Button:
 
     def handle_click(self, event):
         """Check mouse for clicks on the button surface"""
+        # enter key to start, pause, or play again
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                self.is_clicked = True
+                return True
+        # mouse click button to start, pause, or play again
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 self.is_clicked = True
