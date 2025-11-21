@@ -44,7 +44,7 @@ class DegradationEngine:
             return None  # drop packet
 
         # no delay for user at latency = 0
-        if target_paddle is self.player_paddle and self.latency == 0:
+        if target_paddle is self.player_paddle and self.latency <= 5:
             action = {
                 'target' : target_paddle,
                 'data' : data,

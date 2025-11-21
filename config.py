@@ -22,12 +22,13 @@ JITTER_MAP = {
 }
 
 # preset options to mimic real scenarios
+# scaled down from real-world avergages 
 PRESET_MAP = {
-    'LAN' : {'latency' : 1, 'loss' : 0},
-    'Wi-Fi' : {'latency' : 45, 'loss' : 0.5},
-    '4G LTE' : {'latency' : 100, 'loss' : 1.5},
+    'LAN' : {'latency' : 1, 'loss' : 0.0},
+    'Wi-Fi' : {'latency' : 15, 'loss' : 0.1},
+    '4G LTE' : {'latency' : 80, 'loss' : 1.0},
     # Geo-satellite
-    'Sat' : {'latency' : 600, 'loss' : 5},
+    'Sat' : {'latency' : 400, 'loss' : 3.0},
 }
 
 # preset buttons
