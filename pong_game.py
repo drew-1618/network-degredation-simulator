@@ -10,13 +10,32 @@ from degradation_engine import DegradationEngine
 from components.button import Button
 
 # game set up
+pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
+pygame.mixer.init()
 screen = pygame.display.set_mode((WIDTH, TOTAL_HEIGHT))
 pygame.display.set_caption("Network Degradation Pong Simulator")
 clock = pygame.time.Clock()
 # font for scores and messages
 font = pygame.font.Font(None, 74)
 small_font = pygame.font.Font(None, 24)
+
+def load_sound(filename):
+    try:
+        return pygame.mixer.Sound(filename)
+    except FileNotFoundError:
+        print(f"Warning: Could not load {filename}. Sound will be disabled.")
+        return None
+
+# load audio files
+sfx_ai_scored = load_sound("audio_files/ai_scored.wav")
+sfx_background_music = load_sound("audio_files/background_music.wav")
+sfx_paddle_hit = load_sound("audio_files/paddle_hit.wav")
+sfx_player_scored = load_sound("audio_files/player_scored.wav")
+
+if sfx_background_music:
+    sfx_background_music.play(-1)
+    sfx_background_music.set_volume(0.3)
 
 # object instantiations
 # player is left paddle
@@ -37,6 +56,9 @@ sliders = [latency_slider, loss_slider]
 # create start, pause, play again button
 start_pause_button = Button(BUTTON_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT, "START", BLUE)
 
+# create mute button for background music
+mute_button = Button(MUTE_BTN_X, MUTE_BTN_Y, MUTE_BTN_W, 30, "MUTE", GRAY)
+
 # create buttons for scenarios
 preset_buttons = []
 preset_keys = list(PRESET_MAP.keys())
@@ -55,6 +77,7 @@ game_paused_timer = 0
 reset_stats_pending = False
 is_game_running = False
 is_game_over = False
+is_muted = False
 
 # visual state
 hit_flash = False
@@ -104,7 +127,7 @@ def toggle_game_state():
     
 def handle_input():
     """Handle all user input for player, sliders, and quitting game"""
-    global game_paused, is_game_over, is_game_running, ai_score, player_score
+    global game_paused, is_game_over, is_game_running, ai_score, player_score, is_muted
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -115,9 +138,22 @@ def handle_input():
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
                 toggle_game_state()
+
         # handle start/pause button with mouse
         if start_pause_button.handle_click(event):
             toggle_game_state()
+
+        # handle mute button
+        if mute_button.handle_click(event):
+            is_muted = not is_muted
+            if is_muted:
+                mute_button.text = "UNMUTE"
+                if sfx_background_music:
+                    sfx_background_music.set_volume(0.0)
+            else:
+                mute_button.text = "MUTE"
+                if sfx_background_music:
+                    sfx_background_music.set_volume(0.5)
 
         # handle scenario buttons
         if not is_game_over:
@@ -157,7 +193,6 @@ def ai_movement(paddle, ball):
 
 def apply_lagged_actions():
     """Apply actions released by engine after latency expires"""
-
     released_actions = engine.get_due_actions()
 
     for action in released_actions:
@@ -181,19 +216,28 @@ def check_collision():
     # top & bottom wall collision
     if ball.top <= CONTROL_PANEL_HEIGHT or ball.bottom >= TOTAL_HEIGHT:
         ball.velocity_y *= -1
+
+    hit_occurred = False
     # paddle collision with ball
     if ball.colliderect(player_paddle) and ball.velocity_x < 0:
         ball.velocity_x *= -1
+        hit_occurred = True
     if ai_paddle.colliderect(ball) and ball.velocity_x > 0:
         ball.velocity_x *= -1
+        hit_occurred = True
+
+    # play paddle hit audio
+    if hit_occurred and sfx_paddle_hit:
+        sfx_paddle_hit.play()
 
     score_occurred = False
-
     # scoring (left & right walls)
     # ball passed left paddle, AI scores
     if ball.left <= 0:
         ai_score += 1
         score_occurred = True
+        if sfx_ai_scored:
+            sfx_ai_scored.play()
 
         # activate pause
         game_paused = True
@@ -209,6 +253,8 @@ def check_collision():
     if ball.right >= WIDTH:
         player_score += 1
         score_occurred = True
+        if sfx_player_scored: 
+            sfx_player_scored.play()
         engine.reset_stats()
 
         # increase speed if player scores
@@ -273,6 +319,9 @@ def draw_elements():
     # draw presets
     for btn in preset_buttons:
         btn.draw(screen)
+
+    # draw mute
+    mute_button.draw(screen)
 
     # get & display stats
     stats = engine.get_stats()
