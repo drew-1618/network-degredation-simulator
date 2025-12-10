@@ -162,8 +162,16 @@ def handle_input():
                     btn.active = True     # set clicked button active
                     set_scenario(btn.text)
 
+        prev_latency = latency_slider.get_value()
+        prev_loss = loss_slider.get_value()
+
         for slider in sliders:
             slider.handle_event(event)
+
+        # if slider values manually changed, deactivate preset buttons
+        if prev_latency != latency_slider.get_value() or prev_loss != loss_slider.get_value():
+            for btn in preset_buttons:
+                btn.active = False
 
     # only move if not paused
     if is_game_running and not game_paused and not is_game_over:
