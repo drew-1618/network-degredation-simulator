@@ -256,7 +256,6 @@ def check_collision():
         score_occurred = True
         if sfx_player_scored: 
             sfx_player_scored.play()
-        engine.reset_stats()
 
         # increase speed if player scores
         ball.increase_speed()
