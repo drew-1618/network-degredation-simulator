@@ -407,6 +407,14 @@ def game_loop():
                 if reset_stats_pending:
                     engine.reset_stats()
                     reset_stats_pending = False
+
+        # only if manually started and not paused between scores
+        if is_game_running and not game_paused:
+            ball.move()
+            check_collision()
+            ai_movement(ai_paddle, ball)
+            apply_lagged_actions()
+
         # flash red
         if hit_flash:
             time_now = pygame.time.get_ticks()
@@ -417,13 +425,6 @@ def game_loop():
             time_now = pygame.time.get_ticks()
             if time_now - score_flash_timer > FLASH_DURATION:
                 score_flash = False
-
-        # only if manually started and not paused between scores
-        if is_game_running and not game_paused:
-            ball.move()
-            check_collision()
-            ai_movement(ai_paddle, ball)
-            apply_lagged_actions()
 
         draw_elements()
         clock.tick(FPS)
