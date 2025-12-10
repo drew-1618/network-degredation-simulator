@@ -159,6 +159,9 @@ def handle_input():
         if not is_game_over:
             for btn in preset_buttons:
                 if btn.handle_click(event):
+                    for b in preset_buttons:
+                        b.active = False  # reset all buttons
+                    btn.active = True     # set clicked button active
                     set_scenario(btn.text)
 
         for slider in sliders:

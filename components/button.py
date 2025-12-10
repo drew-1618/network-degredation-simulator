@@ -7,14 +7,14 @@ class Button:
         self.text = text
         self.color = color
         self.font = pygame.font.Font(None, 30)
-        self.is_clicked = False
         self.is_hovered = False
+        self.active = False
 
     def draw(self, screen):
         """Draw button and center text"""
         # check hover and set color
         current_color = self.color
-        if self.is_hovered:
+        if self.is_hovered or self.active:
             if self.color == BLUE:
                 current_color = DARKER_BLUE
             elif self.color == GREEN:
@@ -36,6 +36,6 @@ class Button:
         # mouse click button to start, pause, or play again
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
-                self.is_clicked = True
                 return True
+
         return False
