@@ -122,8 +122,6 @@ def toggle_game_state():
     else:
         # if paused, play; if playing, pause
         is_game_running = not is_game_running
-        if not is_game_running:
-            engine.reset_stats()
     
 def handle_input():
     """Handle all user input for player, sliders, and quitting game"""
