@@ -356,6 +356,14 @@ def draw_elements():
     # draw dividing line
     pygame.draw.aaline(screen, WHITE, (WIDTH // 2, CONTROL_PANEL_HEIGHT), (WIDTH // 2, TOTAL_HEIGHT))
 
+    # draw  player labels
+    label_player = small_font.render("PLAYER", True, GRAY)
+    label_ai = small_font.render("COMPUTER", True, GRAY)
+    # Left side (Player)
+    screen.blit(label_player, label_player.get_rect(center=(WIDTH // 4, CONTROL_PANEL_HEIGHT + 20)))
+    # Right side (Computer)
+    screen.blit(label_ai, label_ai.get_rect(center=(3 * WIDTH // 4, CONTROL_PANEL_HEIGHT + 20)))
+
     # render scores
     player_text = font.render(str(player_score), True, WHITE)
     ai_text = font.render(str(ai_score), True, WHITE)
